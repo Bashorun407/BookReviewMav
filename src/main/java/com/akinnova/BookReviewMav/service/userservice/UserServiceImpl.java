@@ -50,6 +50,7 @@ public class UserServiceImpl implements IUserService {
                 .activeStatus(true)
                 .specialization(userCreateDto.getSpecialization())
                 .description(userCreateDto.getDescription())
+                .createdOn(LocalDateTime.now())
                 .build());
 
         return new ResponsePojo<>(ResponseType.SUCCESS, "New user added successfully", new UserResponseDto(userEntity));
