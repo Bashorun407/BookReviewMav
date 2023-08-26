@@ -40,7 +40,7 @@ public class CommentServiceImpl implements ICommentService{
         List<Comment> commentList = commentRepository.findAll();
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All comments", commentList.stream()
-                .skip(pageNum).limit(pageSize).map(CommentResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(CommentResponseDto::new)));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CommentServiceImpl implements ICommentService{
                 .orElseThrow(()-> new ApiException(String.format("There are no comments by title: %s yet", title)));
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Comments By title.",
-                commentList.stream().skip(pageNum).limit(pageSize).map(CommentResponseDto::new)));
+                commentList.stream().skip(pageNum - 1).limit(pageSize).map(CommentResponseDto::new)));
     }
 
     @Override
@@ -58,8 +58,7 @@ public class CommentServiceImpl implements ICommentService{
                 .orElseThrow(()-> new ApiException(String.format("There are no comments by username: %s yet", username)));
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Comments By title.",
-                commentList.stream().skip(pageNum).limit(pageSize).map(CommentResponseDto::new)));
-
+                commentList.stream().skip(pageNum - 1).limit(pageSize).map(CommentResponseDto::new)));
     }
 
     @Override

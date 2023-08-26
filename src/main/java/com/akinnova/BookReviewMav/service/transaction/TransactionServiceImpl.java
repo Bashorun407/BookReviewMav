@@ -90,7 +90,8 @@ public class TransactionServiceImpl implements ITransactionService{
         List<Transaction> transactionList = transactionRepository.findByUserId(providerId)
                 .orElseThrow(()-> new ApiException("There are no transaction with provider id: " + providerId));
 
-        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, String.format("Transaction by id: %s", providerId), transactionList.stream().skip(pageNum).limit(pageSize).map(TransactionResponseDto::new)));
+        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, String.format("Transaction by id: %s", providerId),
+                transactionList.stream().skip(pageNum - 1).limit(pageSize).map(TransactionResponseDto::new)));
     }
 
     @Override

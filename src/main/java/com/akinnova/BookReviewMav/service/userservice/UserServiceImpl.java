@@ -48,7 +48,7 @@ public class UserServiceImpl implements IUserService {
                 .password(userCreateDto.getPassword())
                 .userRoleEnum(userCreateDto.getUserRoleEnum())
                 .activeStatus(true)
-                //.userRole(userCreateDto.getRoleName())
+                .specialization(userCreateDto.getSpecialization())
                 .description(userCreateDto.getDescription())
                 .build());
 
@@ -135,6 +135,7 @@ public class UserServiceImpl implements IUserService {
         userEntity.setEmail(userUpdateDto.getEmail());
         userEntity.setPassword(userUpdateDto.getPassword());
         userEntity.setUserRoleEnum(userUpdateDto.getUserRoleEnum());
+        userEntity.setSpecialization(userUpdateDto.getSpecialization());
         userEntity.setDescription(userUpdateDto.getDescription());
         userEntity.setModifiedOn(LocalDateTime.now());
 

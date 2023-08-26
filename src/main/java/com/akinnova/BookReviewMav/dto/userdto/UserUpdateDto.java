@@ -11,5 +11,6 @@ public class UserUpdateDto {
     private String email;
     private String password;
     private UserRoleEnum userRoleEnum;
+    private String specialization;
     private String description;
 }
