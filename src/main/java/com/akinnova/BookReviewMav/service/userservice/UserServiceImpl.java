@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.akinnova.BookReviewMav.enums.UserRoleEnum.*;
@@ -86,6 +87,7 @@ public class UserServiceImpl implements IUserService {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
                 .filter(x-> x.getUserRoleEnum() == Client)
                 .filter(UserEntity::getActiveStatus)
+                .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
 
         if(userEntityList.isEmpty())
@@ -100,6 +102,7 @@ public class UserServiceImpl implements IUserService {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
                 .filter(x-> x.getUserRoleEnum() == Service_Provider)
                 .filter(UserEntity::getActiveStatus)
+                .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
 
         if(userEntityList.isEmpty())
@@ -115,6 +118,7 @@ public class UserServiceImpl implements IUserService {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
                 .filter(x-> x.getUserRoleEnum() == ADMIN)
                 .filter(UserEntity::getActiveStatus)
+                .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
 
         if(userEntityList.isEmpty())
