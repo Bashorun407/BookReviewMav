@@ -1,6 +1,8 @@
 package com.akinnova.BookReviewMav.entity;
 
-import com.akinnova.BookReviewMav.enums.ReviewStatus;
+import com.akinnova.BookReviewMav.enums.Category;
+import com.akinnova.BookReviewMav.enums.ProjectApproval;
+import com.akinnova.BookReviewMav.enums.ProjectCompletion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +18,9 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "book_table")
+@Table(name = "book_table",
+        uniqueConstraints = @UniqueConstraint(columnNames = "projectId")
+)
 
 public class BookEntity {
     @Id
@@ -24,10 +28,15 @@ public class BookEntity {
     private Long id;
     private String coverImage;
     private String title;
+    private Category category;
     private String content;
-    private String author;
     private String projectId;
-    private ReviewStatus reviewStatus;
+    private String username;
+    private String serviceProvider;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private ProjectApproval projectApproval;
+    private ProjectCompletion projectCompletion;
     private Boolean activeStatus;
     @CreationTimestamp
     private LocalDateTime createdOn;

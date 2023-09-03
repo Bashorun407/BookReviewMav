@@ -1,16 +1,20 @@
 package com.akinnova.BookReviewMav.dto.userdto;
 
-import com.akinnova.BookReviewMav.enums.UserRoleEnum;
+import com.akinnova.BookReviewMav.enums.*;
 import lombok.Data;
 
 @Data
 public class UserUpdateDto {
-    private String profilePicture;
-    private String phoneNumber;
     private String username;
+    private String profilePicture;
+    private String dateOfBirth;
+    private String phoneNumber;
     private String email;
     private String password;
-    private UserRoleEnum userRoleEnum;
-    private String specialization;
+    private UserRole userRole;
+    private UserType userType;
+    private Specialization specialization;
+    private ApplicationStatus applicationStatus;
     private String description;
+    private Boolean activeStatus;
 }

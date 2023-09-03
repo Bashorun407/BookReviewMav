@@ -1,11 +1,8 @@
 package com.akinnova.BookReviewMav.service.bookservice;
 
-import com.akinnova.BookReviewMav.dto.bookdto.BookCreateDto;
-import com.akinnova.BookReviewMav.dto.bookdto.BookResponseDto;
-import com.akinnova.BookReviewMav.dto.bookdto.BookUpdateDto;
+import com.akinnova.BookReviewMav.dto.bookdto.*;
 import com.akinnova.BookReviewMav.entity.BookEntity;
 import com.akinnova.BookReviewMav.enums.ResponseType;
-import com.akinnova.BookReviewMav.enums.ReviewStatus;
 import com.akinnova.BookReviewMav.exception.ApiException;
 import com.akinnova.BookReviewMav.repository.BookRepository;
 import com.akinnova.BookReviewMav.response.ResponsePojo;
@@ -17,7 +14,11 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import static com.akinnova.BookReviewMav.enums.ProjectApproval.NOT_APPROVED;
+import static com.akinnova.BookReviewMav.enums.ProjectCompletion.*;
 
 @Service
 public class BookServiceImpl implements IBookService {
@@ -35,10 +36,12 @@ public class BookServiceImpl implements IBookService {
         BookEntity bookEntity =  bookRepository.save(BookEntity.builder()
                 .coverImage(bookCreateDto.getCoverImage())
                 .title(bookCreateDto.getTitle())
-                .author(bookCreateDto.getAuthor())
+                .category(bookCreateDto.getCategory())
+                .username(bookCreateDto.getUsername())
                 .content(bookCreateDto.getContent())
                 .projectId(ResponseUtils.generateBookSerialNumber(10, bookCreateDto.getTitle()))
-                .reviewStatus(ReviewStatus.Pending)
+                .projectApproval(NOT_APPROVED)
+                .projectCompletion(PENDING)
                 .activeStatus(true)
                 .createdOn(LocalDateTime.now())
                 .build());
@@ -55,17 +58,17 @@ public class BookServiceImpl implements IBookService {
             return new ResponseEntity<>("There are no projects currently", HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All books", bookEntityList.stream()
-                .filter(BookEntity::getActiveStatus).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
+                .filter(BookEntity::getActiveStatus).sorted(Comparator.comparing(BookEntity::getTitle)).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
     }
 
     @Override
-    public ResponseEntity<?> findBookByAuthor(String author, int pageNum, int pageSize) {
+    public ResponseEntity<?> findBookByOwner(String username, int pageNum, int pageSize) {
 
-        List<BookEntity> bookEntityList = bookRepository.findByAuthor(author)
-                .orElseThrow(()-> new ApiException("There are no projects by this author: " + author));
+        List<BookEntity> bookEntityList = bookRepository.findByUsername(username)
+                .orElseThrow(()-> new ApiException("There are no projects by this author: " + username));
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All books", bookEntityList.stream()
-                .filter(BookEntity::getActiveStatus).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
+                .filter(BookEntity::getActiveStatus).sorted(Comparator.comparing(BookEntity::getTitle)).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
     }
 
     @Override
@@ -75,7 +78,7 @@ public class BookServiceImpl implements IBookService {
                 .orElseThrow(()-> new ApiException("There are no projects by this title: " + title));
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All books", bookEntityList.stream()
-                .filter(BookEntity::getActiveStatus).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
+                .filter(BookEntity::getActiveStatus).sorted(Comparator.comparing(BookEntity::getTitle)).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
     }
 
     @Override
@@ -91,21 +94,24 @@ public class BookServiceImpl implements IBookService {
     // TODO: 13/08/2023 To complete the following methods
     @Override
     public ResponseEntity<?> findPendingBookReview(int pageNum, int pageSize) {
-        List<BookEntity> bookEntityList = bookRepository.findAll().stream().filter(x-> x.getReviewStatus() == ReviewStatus.Pending)
+        List<BookEntity> bookEntityList = bookRepository.findAll().stream()
+                .filter(BookEntity::getActiveStatus)
+                .filter(x-> x.getProjectCompletion() == PENDING)
+                .sorted(Comparator.comparing(BookEntity::getTitle))
                 .toList();
 
         if(bookEntityList.isEmpty())
             return new ResponseEntity<>("There are no pending reviews yet.", HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Pending reviews", bookEntityList.stream()
-                .filter(BookEntity::getActiveStatus).skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(BookResponseDto::new)));
     }
 
     @Override
     public ResponseEntity<?> findStartedBookReview(int pageNum, int pageSize) {
         List<BookEntity> bookEntityList = bookRepository.findAll().stream()
                 .filter(BookEntity::getActiveStatus)
-                .filter(x-> x.getReviewStatus() == ReviewStatus.Started)
+                .filter(x-> x.getProjectCompletion() == STARTED)
                 .toList();
 
         if(bookEntityList.isEmpty())
@@ -119,7 +125,8 @@ public class BookServiceImpl implements IBookService {
     public ResponseEntity<?> findCompletedBookReview(int pageNum, int pageSize) {
         List<BookEntity> bookEntityList = bookRepository.findAll().stream()
                 .filter(BookEntity::getActiveStatus)
-                .filter(x-> x.getReviewStatus() == ReviewStatus.Completed)
+                .filter(x-> x.getProjectCompletion() == COMPLETED)
+                .sorted(Comparator.comparing(BookEntity::getTitle))
                 .toList();
 
         if(bookEntityList.isEmpty())
@@ -137,12 +144,42 @@ public class BookServiceImpl implements IBookService {
 
         bookEntity.setCoverImage(bookUpdateDto.getCoverImage());
         bookEntity.setTitle(bookUpdateDto.getTitle());
-        bookEntity.setAuthor(bookUpdateDto.getAuthor());
+        bookEntity.setUsername(bookEntity.getUsername());
         bookEntity.setActiveStatus(true);
-        bookEntity.setReviewStatus(bookUpdateDto.getReviewStatus());
         bookEntity.setModifiedOn(LocalDateTime.now());
 
         //Save to repository
+        bookRepository.save(bookEntity);
+
+        return ResponseEntity.ok("Book updated successfully");
+    }
+
+    @Override
+    public ResponseEntity<?> serviceProviderBookUpdate(BookServiceProviderUpdateDto serviceProviderUpdateDto) {
+        BookEntity bookEntity = bookRepository.findByProjectId(serviceProviderUpdateDto.getProjectId())
+                .orElseThrow(()-> new ApiException(String.format("Book with projectId: %s does not exist",
+                        serviceProviderUpdateDto.getProjectId())));
+
+        bookEntity.setServiceProvider(serviceProviderUpdateDto.getServiceProvider());
+        bookEntity.setProjectCompletion(serviceProviderUpdateDto.getProjectCompletion());
+        bookEntity.setStartDate(serviceProviderUpdateDto.getStartDate());
+        bookEntity.setEndDate(serviceProviderUpdateDto.getEndDate());
+        bookEntity.setModifiedOn(LocalDateTime.now());
+
+        bookRepository.save(bookEntity);
+
+        return ResponseEntity.ok("Book updated successfully");
+
+    }
+
+    @Override
+    public ResponseEntity<?> adminBookUpdate(BookAdminUpdateDto adminUpdateDto) {
+        BookEntity bookEntity = bookRepository.findByProjectId(adminUpdateDto.getProjectId())
+                .orElseThrow(()-> new ApiException(String.format("Book with projectId: %s does not exist",
+                        adminUpdateDto.getProjectId())));
+
+        bookEntity.setProjectApproval(adminUpdateDto.getProjectApproval());
+
         bookRepository.save(bookEntity);
 
         return ResponseEntity.ok("Book updated successfully");
@@ -163,12 +200,12 @@ public class BookServiceImpl implements IBookService {
     }
 
     @Override
-    public ResponseEntity<?> searchBook(String author, String title, String projectId, int pageNum, int pageSize) {
+    public ResponseEntity<?> searchBook(String username, String title, String projectId, int pageNum, int pageSize) {
         List<BookEntity> bookEntity = new ArrayList<>();
 
-        if(StringUtils.hasText(author))
-            bookEntity = bookRepository.findByAuthor(author)
-                    .orElseThrow(()-> new ApiException(String.format("There are no books by this author: %s", author)));
+        if(StringUtils.hasText(username))
+            bookEntity = bookRepository.findByUsername(username)
+                    .orElseThrow(()-> new ApiException(String.format("There are no books by this author: %s", username)));
 
         if(StringUtils.hasText(title))
             bookEntity = bookRepository.findByTitle(title)
@@ -178,13 +215,10 @@ public class BookServiceImpl implements IBookService {
             bookEntity.add(bookRepository.findByProjectId(projectId).filter(BookEntity::getActiveStatus)
                     .orElseThrow(()-> new ApiException(String.format("There are no books with this serial number: %s", projectId))));
 
-        //Preparing response dto
-
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Completed reviews", bookEntity.stream()
                 .filter(BookEntity::getActiveStatus)
                 .skip(pageNum).limit(pageSize).map(BookResponseDto::new)));
 
     }
-
 
 }

@@ -1,8 +1,6 @@
 package com.akinnova.BookReviewMav.controller;
 
-import com.akinnova.BookReviewMav.dto.bookdto.BookCreateDto;
-import com.akinnova.BookReviewMav.dto.bookdto.BookResponseDto;
-import com.akinnova.BookReviewMav.dto.bookdto.BookUpdateDto;
+import com.akinnova.BookReviewMav.dto.bookdto.*;
 import com.akinnova.BookReviewMav.response.ResponsePojo;
 import com.akinnova.BookReviewMav.service.bookservice.BookServiceImpl;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +26,9 @@ public class BookController {
     }
 
     @GetMapping("/author/{author}")
-    public ResponseEntity<?> findBookByAuthor(@PathVariable String author, @RequestParam(defaultValue = "1") int pageNum,
+    public ResponseEntity<?> findBookByOwner(@PathVariable String username, @RequestParam(defaultValue = "1") int pageNum,
                                               @RequestParam(defaultValue = "10") int pageSize) {
-        return bookService.findBookByAuthor(author, pageNum, pageSize);
+        return bookService.findBookByOwner(username, pageNum, pageSize);
     }
 
     @GetMapping("/title/{title}")
@@ -67,17 +65,26 @@ public class BookController {
         return bookService.updateBook(bookUpdateDto);
     }
 
+    @PutMapping("/serviceProviderUpdate")
+    public ResponseEntity<?> serviceProviderBookUpdate(BookServiceProviderUpdateDto serviceProviderUpdateDto) {
+        return bookService.serviceProviderBookUpdate(serviceProviderUpdateDto);
+    }
+
+    @PutMapping("/adminUpdate")
+    public ResponseEntity<?> adminBookUpdate(BookAdminUpdateDto adminUpdateDto) {
+        return bookService.adminBookUpdate(adminUpdateDto);
+    }
     @DeleteMapping("/delete/{projectId}")
     public ResponseEntity<?> deleteBook(@PathVariable String projectId) {
         return bookService.deleteBook(projectId);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchBook(@RequestParam(required = false) String author,
+    public ResponseEntity<?> searchBook(@RequestParam(required = false) String username,
                                         @RequestParam(required = false) String title,
                                         @RequestParam(required = false) String projectId,
                                         @RequestParam(defaultValue = "1") int pageNum,
                                         @RequestParam(defaultValue = "10") int pageSize) {
-        return bookService.searchBook(author, title, projectId, pageNum, pageSize);
+        return bookService.searchBook(username, title, projectId, pageNum, pageSize);
     }
 }

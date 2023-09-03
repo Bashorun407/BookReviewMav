@@ -1,5 +1,6 @@
 package com.akinnova.BookReviewMav.service.userservice;
 
+import com.akinnova.BookReviewMav.dto.userdto.AdminUpdateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserCreateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserResponseDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserUpdateDto;
@@ -13,8 +14,10 @@ public interface IUserService {
     ResponseEntity<?> SearchUser(String username, String phoneNumber, String email);
     ResponseEntity<?> FindClients(int pageNum, int pageSize);
     ResponseEntity<?> FindServiceProviders(int pageNum, int pageSize);
+    ResponseEntity<?> FindRegularUsers(int pageNum, int pageSize);
     ResponseEntity<?> FindAdmins(int pageNum, int pageSize);
     ResponseEntity<?> updateUser(UserUpdateDto userUpdateDto);
+    ResponseEntity<?> jobRoleUpdate(AdminUpdateDto adminUpdateDto);
     ResponseEntity<?> deleteUser(String username);
 
 }

@@ -34,17 +34,17 @@ public class BookReviewMavApplication {
 		};
 	}
 
-	@Bean
-	@Transactional
-	public CommandLineRunner commandLineRunner(UserRepository userRepository){
-		log.info("I am in the command line runner");
-		return args -> {
-			userRepository.findAll().stream().peek(p->{
-				p.setActiveStatus(true);
-				userRepository.save(p);
-				System.out.println("User data has been updated");
-			});
-		};
-	}
+//	@Bean
+//	@Transactional
+//	public CommandLineRunner commandLineRunner(UserRepository userRepository){
+//		log.info("I am in the command line runner");
+//		return args -> {
+//			userRepository.findAll().stream().peek(p->{
+//				p.setActiveStatus(true);
+//				userRepository.save(p);
+//				System.out.println("User data has been updated");
+//			});
+//		};
+//	}
 
 }

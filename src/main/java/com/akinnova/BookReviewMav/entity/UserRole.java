@@ -1,6 +1,5 @@
 package com.akinnova.BookReviewMav.entity;
 
-import com.akinnova.BookReviewMav.enums.UserRoleEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +17,6 @@ public class UserRole {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private UserRoleEnum roleName;
+    private com.akinnova.BookReviewMav.enums.UserRole roleName;
 
 }

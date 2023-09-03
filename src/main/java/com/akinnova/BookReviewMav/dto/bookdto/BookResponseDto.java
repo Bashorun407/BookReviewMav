@@ -7,13 +7,15 @@ import lombok.Data;
 public class BookResponseDto {
     private String coverImage;
     private String title;
-    private String author;
+    private String username;
     private String projectId;
+
 
     public BookResponseDto(BookEntity bookEntity){
         this.coverImage = bookEntity.getCoverImage();
         this.title = bookEntity.getTitle();
-        this.author = bookEntity.getAuthor();
+        this.username = bookEntity.getUsername();
         this.projectId = bookEntity.getProjectId();
+
     }
 }

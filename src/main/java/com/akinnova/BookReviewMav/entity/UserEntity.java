@@ -1,6 +1,7 @@
 package com.akinnova.BookReviewMav.entity;
 
-import com.akinnova.BookReviewMav.enums.UserRoleEnum;
+import com.akinnova.BookReviewMav.enums.*;
+import com.akinnova.BookReviewMav.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,8 +38,11 @@ public class UserEntity {
     private String username;
     private String email;
     private String password;
-    private UserRoleEnum userRoleEnum;
-    private String specialization;
+    private UserType userType;
+    private UserRole userRole;
+    private Specialization specialization;
+    private ApplicationStatus applicationStatus;
+    private ReviewStatus reviewStatus;
     private String description;
     private Boolean activeStatus;
 
@@ -53,6 +57,6 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"),
             inverseJoinColumns = @JoinColumn(name = "role", referencedColumnName = "roleName")
     )
-    private Set<UserRole> roles;
+    private Set<com.akinnova.BookReviewMav.entity.UserRole> roles;
 
 }

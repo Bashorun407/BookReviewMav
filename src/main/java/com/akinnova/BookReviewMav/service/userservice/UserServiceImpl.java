@@ -1,10 +1,11 @@
 package com.akinnova.BookReviewMav.service.userservice;
 
+import com.akinnova.BookReviewMav.dto.userdto.AdminUpdateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserCreateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserResponseDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserUpdateDto;
 import com.akinnova.BookReviewMav.entity.UserEntity;
-import com.akinnova.BookReviewMav.enums.ResponseType;
+import com.akinnova.BookReviewMav.enums.*;
 import com.akinnova.BookReviewMav.exception.ApiException;
 import com.akinnova.BookReviewMav.repository.UserRepository;
 import com.akinnova.BookReviewMav.response.ResponsePojo;
@@ -18,7 +19,11 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.akinnova.BookReviewMav.enums.UserRoleEnum.*;
+import static com.akinnova.BookReviewMav.enums.ApplicationStatus.NOT_RECEIVED;
+import static com.akinnova.BookReviewMav.enums.ReviewStatus.NOT_CONFIRMED;
+import static com.akinnova.BookReviewMav.enums.UserRole.*;
+import static com.akinnova.BookReviewMav.enums.UserType.CLIENT;
+import static com.akinnova.BookReviewMav.enums.UserType.SERVICE_PROVIDER;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -38,19 +43,18 @@ public class UserServiceImpl implements IUserService {
 
         //Add and save new client to repository
         UserEntity userEntity = userRepository.save(UserEntity.builder()
-                .profilePicture(userCreateDto.getProfilePicture())
                 .firstName(userCreateDto.getFirstName())
                 .lastName(userCreateDto.getLastName())
                 .userId(ResponseUtils.generateUniqueIdentifier(10, userCreateDto.getUsername()))
-                .dateOfBirth(userCreateDto.getDateOfBirth())
-                .phoneNumber(userCreateDto.getPhoneNumber())
                 .username(userCreateDto.getUsername())
                 .email(userCreateDto.getEmail())
                 .password(userCreateDto.getPassword())
-                .userRoleEnum(userCreateDto.getUserRoleEnum())
+                .userRole(REGULAR_USER)
+                .userType(CLIENT)
+                .specialization(Specialization.NONE)
+                .applicationStatus(NOT_RECEIVED)
+                .reviewStatus(NOT_CONFIRMED)
                 .activeStatus(true)
-                .specialization(userCreateDto.getSpecialization())
-                .description(userCreateDto.getDescription())
                 .createdOn(LocalDateTime.now())
                 .build());
 
@@ -62,6 +66,7 @@ public class UserServiceImpl implements IUserService {
         List<UserEntity> userEntityList = userRepository.findAll().stream().filter(UserEntity::getActiveStatus).toList();
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All users", userEntityList.stream()
+                .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
     }
 
@@ -85,7 +90,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ResponseEntity<?> FindClients(int pageNum, int pageSize) {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
-                .filter(x-> x.getUserRoleEnum() == Client)
+                .filter(x-> x.getUserType() == CLIENT)
                 .filter(UserEntity::getActiveStatus)
                 .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
@@ -100,7 +105,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ResponseEntity<?> FindServiceProviders(int pageNum, int pageSize) {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
-                .filter(x-> x.getUserRoleEnum() == Service_Provider)
+                .filter(x-> x.getUserType() == SERVICE_PROVIDER)
                 .filter(UserEntity::getActiveStatus)
                 .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
@@ -114,9 +119,24 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public ResponseEntity<?> FindRegularUsers(int pageNum, int pageSize) {
+        List<UserEntity> userEntityList = userRepository.findAll().stream()
+                .filter(x-> x.getUserRole() == REGULAR_USER)
+                .filter(UserEntity::getActiveStatus)
+                .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
+                .toList();
+
+        if(userEntityList.isEmpty())
+            return new ResponseEntity<>("There are no regular users yet.", HttpStatus.NOT_FOUND);
+
+        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All regular users", userEntityList.stream()
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+    }
+
+    @Override
     public ResponseEntity<?> FindAdmins(int pageNum, int pageSize) {
         List<UserEntity> userEntityList = userRepository.findAll().stream()
-                .filter(x-> x.getUserRoleEnum() == ADMIN)
+                .filter(x-> x.getUserRole() == ADMIN)
                 .filter(UserEntity::getActiveStatus)
                 .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
                 .toList();
@@ -129,25 +149,42 @@ public class UserServiceImpl implements IUserService {
 
     }
 
+
     @Override
     public ResponseEntity<?> updateUser(UserUpdateDto userUpdateDto) {
-        UserEntity userEntity = userRepository.findByUsername(userUpdateDto.getUsername()).filter(UserEntity::getActiveStatus)
+        UserEntity userEntity = userRepository.findByUsername(userUpdateDto.getUsername())
                 .orElseThrow(()-> new ApiException(String.format(" There is no user by username: %s ", userUpdateDto.getUsername())));
 
         userEntity.setProfilePicture(userUpdateDto.getProfilePicture());
+        userEntity.setDateOfBirth(userUpdateDto.getDateOfBirth());
         userEntity.setPhoneNumber(userUpdateDto.getPhoneNumber());
-        userEntity.setUsername(userUpdateDto.getUsername());
         userEntity.setEmail(userUpdateDto.getEmail());
         userEntity.setPassword(userUpdateDto.getPassword());
-        userEntity.setUserRoleEnum(userUpdateDto.getUserRoleEnum());
         userEntity.setSpecialization(userUpdateDto.getSpecialization());
+        userEntity.setApplicationStatus(userUpdateDto.getApplicationStatus());
         userEntity.setDescription(userUpdateDto.getDescription());
+        userEntity.setActiveStatus(true);
         userEntity.setModifiedOn(LocalDateTime.now());
 
         //Save to repository
         userRepository.save(userEntity);
 
         return ResponseEntity.ok("user details has been updated successfully.");
+    }
+
+    @Override
+    public ResponseEntity<?> jobRoleUpdate(AdminUpdateDto adminUpdateDto) {
+        UserEntity userEntity = userRepository.findByUsername(adminUpdateDto.getUsername())
+                .orElseThrow(()-> new ApiException(String.format(" There is no user by username: %s ", adminUpdateDto.getUsername())));
+
+        userEntity.setUserRole(adminUpdateDto.getUserRole());
+        userEntity.setUserType(adminUpdateDto.getUserType());
+        userEntity.setReviewStatus(adminUpdateDto.getReviewStatus());
+
+        //Save to repository
+        userRepository.save(userEntity);
+        return ResponseEntity.ok("user details has been updated successfully.");
+
     }
 
     @Override

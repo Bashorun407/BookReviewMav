@@ -1,5 +1,6 @@
 package com.akinnova.BookReviewMav.controller;
 
+import com.akinnova.BookReviewMav.dto.userdto.AdminUpdateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserCreateDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserResponseDto;
 import com.akinnova.BookReviewMav.dto.userdto.UserUpdateDto;
@@ -56,9 +57,20 @@ public class UserController {
         return userService.FindAdmins(pageNum, pageSize);
     }
 
+    @GetMapping("/regularUsers")
+    public ResponseEntity<?> FindRegularUsers(@RequestParam(defaultValue = "1") int pageNum,
+                                              @RequestParam(defaultValue = "20") int pageSize) {
+        return userService.FindRegularUsers(pageNum, pageSize);
+    }
+
     @PutMapping("/update")
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateDto) {
         return userService.updateUser(userUpdateDto);
+    }
+
+    @PutMapping("/roleUpdate")
+    public ResponseEntity<?> jobRoleUpdate(AdminUpdateDto adminUpdateDto) {
+        return userService.jobRoleUpdate(adminUpdateDto);
     }
 
     @DeleteMapping("/delete/{username}")

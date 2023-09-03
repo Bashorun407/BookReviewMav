@@ -7,8 +7,8 @@ import com.akinnova.BookReviewMav.email.emailservice.EmailServiceImpl;
 import com.akinnova.BookReviewMav.entity.BookEntity;
 import com.akinnova.BookReviewMav.entity.Transaction;
 import com.akinnova.BookReviewMav.entity.UserEntity;
+import com.akinnova.BookReviewMav.enums.ProjectApproval;
 import com.akinnova.BookReviewMav.enums.ResponseType;
-import com.akinnova.BookReviewMav.enums.ReviewStatus;
 import com.akinnova.BookReviewMav.exception.ApiException;
 import com.akinnova.BookReviewMav.repository.BookRepository;
 import com.akinnova.BookReviewMav.repository.TransactionRepository;
@@ -50,7 +50,7 @@ public class TransactionServiceImpl implements ITransactionService{
                 .orElseThrow(()-> new ApiException("There is no project by this id: " + transactionDto.getProjectId()));
 
         //Update and Save changes to repository
-        bookEntity.setReviewStatus(ReviewStatus.Started);
+        bookEntity.setProjectApproval(ProjectApproval.APPROVED);
         bookRepository.save(bookEntity);
 
         //Then notification is sent to Service provider selected by user
