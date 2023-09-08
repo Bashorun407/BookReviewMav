@@ -21,7 +21,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    private final String[] WHITE_LIST_URL = {"/api/v1/book/auth/(.*)", "/api/v1/comment/auth/**", "/api/v1/rates/auth/**",
+    private final String[] WHITE_LIST_URL = {"/api/v1/project/auth/(.*)", "/api/v1/comment/auth/**", "/api/v1/rates/auth/**",
             "/api/v1/user/auth/**", "/api/v1/provider/auth/(.*)", "/api/v1/transaction/auth/(.*)", "/api/v1/email/auth/(.*)"};
 
     //2) Security filter chain

@@ -1,4 +1,4 @@
-package com.akinnova.BookReviewMav.dto.bookdto;
+package com.akinnova.BookReviewMav.dto.projectdto;
 
 import com.akinnova.BookReviewMav.enums.ProjectCompletion;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class BookServiceProviderUpdateDto {
+public class ProjectServiceProviderUpdateDto {
     private String projectId;
     private String serviceProvider;
     private ProjectCompletion projectCompletion;

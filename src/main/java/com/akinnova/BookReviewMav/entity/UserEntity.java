@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -18,11 +19,12 @@ import java.util.Set;
 @Data
 @Builder
 @Entity
-@Table(name = "client_table",
+@Table(name = "user_table",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "phoneNumber"),
                 @UniqueConstraint(columnNames = "username"),
-                @UniqueConstraint(columnNames = "email")
+                @UniqueConstraint(columnNames = "email"),
+                @UniqueConstraint(columnNames = "userId")
         }
 )
 public class UserEntity {
@@ -38,10 +40,16 @@ public class UserEntity {
     private String username;
     private String email;
     private String password;
+    @Enumerated(EnumType.STRING)
     private UserType userType;
+    @Enumerated(EnumType.STRING)
     private UserRole userRole;
+    @Enumerated(EnumType.STRING)
     private Specialization specialization;
+    private Double chargePerHour;
+    @Enumerated(EnumType.STRING)
     private ApplicationStatus applicationStatus;
+    @Enumerated(EnumType.STRING)
     private ReviewStatus reviewStatus;
     private String description;
     private Boolean activeStatus;
@@ -57,6 +65,7 @@ public class UserEntity {
             joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"),
             inverseJoinColumns = @JoinColumn(name = "role", referencedColumnName = "roleName")
     )
-    private Set<com.akinnova.BookReviewMav.entity.UserRole> roles;
+    private Set<UserRoles> roles;
 
+    private EnumSet<UserRole> enumRoles;
 }

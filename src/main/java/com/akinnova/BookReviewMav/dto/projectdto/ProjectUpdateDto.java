@@ -1,9 +1,9 @@
-package com.akinnova.BookReviewMav.dto.bookdto;
+package com.akinnova.BookReviewMav.dto.projectdto;
 
 import lombok.Data;
 
 @Data
-public class BookUpdateDto {
+public class ProjectUpdateDto {
     private String coverImage;
     private String title;
     private String content;

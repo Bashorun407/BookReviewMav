@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class RatingDto {
-    private String title;
+    private String username;
     private Integer starRating;
 }

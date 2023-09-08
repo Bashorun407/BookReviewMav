@@ -7,9 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,7 +16,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "comment_table")
-public class Comment implements Serializable {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,11 +26,4 @@ public class Comment implements Serializable {
     @CreationTimestamp
     private LocalDateTime commentTime;
 
-    //Relationship with book
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "book_comments",
-            joinColumns = @JoinColumn(name = "comment", referencedColumnName = "comment"),
-            inverseJoinColumns = @JoinColumn(name = "book", referencedColumnName = "title")
-    )
-    private List<BookEntity> books;
 }

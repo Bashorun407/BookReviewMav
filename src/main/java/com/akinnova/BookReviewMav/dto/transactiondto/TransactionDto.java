@@ -15,5 +15,4 @@ public class TransactionDto {
     private String invoiceCode;
     private LocalDateTime transactionDate;
 
-
 }

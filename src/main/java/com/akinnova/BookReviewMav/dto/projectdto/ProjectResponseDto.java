@@ -1,17 +1,17 @@
-package com.akinnova.BookReviewMav.dto.bookdto;
+package com.akinnova.BookReviewMav.dto.projectdto;
 
-import com.akinnova.BookReviewMav.entity.BookEntity;
+import com.akinnova.BookReviewMav.entity.Project;
 import lombok.Data;
 
 @Data
-public class BookResponseDto {
+public class ProjectResponseDto {
     private String coverImage;
     private String title;
     private String username;
     private String projectId;
 
 
-    public BookResponseDto(BookEntity bookEntity){
+    public ProjectResponseDto(Project bookEntity){
         this.coverImage = bookEntity.getCoverImage();
         this.title = bookEntity.getTitle();
         this.username = bookEntity.getUsername();

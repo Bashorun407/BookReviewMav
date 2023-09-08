@@ -11,10 +11,5 @@ public class UserUpdateDto {
     private String phoneNumber;
     private String email;
     private String password;
-    private UserRole userRole;
-    private UserType userType;
-    private Specialization specialization;
-    private ApplicationStatus applicationStatus;
-    private String description;
-    private Boolean activeStatus;
+
 }

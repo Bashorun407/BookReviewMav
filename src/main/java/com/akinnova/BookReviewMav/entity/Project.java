@@ -1,7 +1,8 @@
 package com.akinnova.BookReviewMav.entity;
 
 import com.akinnova.BookReviewMav.enums.Category;
-import com.akinnova.BookReviewMav.enums.ProjectApproval;
+import com.akinnova.BookReviewMav.enums.ProjectLevelApproval;
+import com.akinnova.BookReviewMav.enums.ProjectStartApproval;
 import com.akinnova.BookReviewMav.enums.ProjectCompletion;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -18,11 +19,11 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "book_table",
+@Table(name = "project_table",
         uniqueConstraints = @UniqueConstraint(columnNames = "projectId")
 )
 
-public class BookEntity {
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,7 +36,11 @@ public class BookEntity {
     private String serviceProvider;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-    private ProjectApproval projectApproval;
+    @Enumerated(EnumType.STRING)
+    private ProjectStartApproval projectStartApproval;
+    @Enumerated(EnumType.STRING)
+    private ProjectLevelApproval projectLevelApproval;
+    @Enumerated(EnumType.STRING)
     private ProjectCompletion projectCompletion;
     private Boolean activeStatus;
     @CreationTimestamp

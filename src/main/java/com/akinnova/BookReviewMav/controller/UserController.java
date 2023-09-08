@@ -1,9 +1,6 @@
 package com.akinnova.BookReviewMav.controller;
 
-import com.akinnova.BookReviewMav.dto.userdto.AdminUpdateDto;
-import com.akinnova.BookReviewMav.dto.userdto.UserCreateDto;
-import com.akinnova.BookReviewMav.dto.userdto.UserResponseDto;
-import com.akinnova.BookReviewMav.dto.userdto.UserUpdateDto;
+import com.akinnova.BookReviewMav.dto.userdto.*;
 import com.akinnova.BookReviewMav.response.ResponsePojo;
 import com.akinnova.BookReviewMav.service.userservice.UserServiceImpl;
 import lombok.AllArgsConstructor;
@@ -63,9 +60,14 @@ public class UserController {
         return userService.FindRegularUsers(pageNum, pageSize);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/userUpdate")
     public ResponseEntity<?> updateUser(@RequestBody UserUpdateDto userUpdateDto) {
         return userService.updateUser(userUpdateDto);
+    }
+
+    @PutMapping("/providerUpdate")
+    public ResponseEntity<?> serviceProviderUpdate(ServiceProviderUpdateDto providerUpdateDto) {
+        return userService.serviceProviderUpdate(providerUpdateDto);
     }
 
     @PutMapping("/roleUpdate")
