@@ -27,13 +27,6 @@ public class CommentController {
         return commentService.allComments(pageNum, pageSize);
     }
 
-    @GetMapping("/title/{title}")
-    public ResponseEntity<?> findCommentByTitle(@PathVariable String title,
-                                                @RequestParam(defaultValue = "1") int pageNum,
-                                                @RequestParam(defaultValue = "20") int pageSize) {
-        return commentService.findCommentByTitle(title, pageNum, pageSize);
-    }
-
     @GetMapping("/username/{username}")
     public ResponseEntity<?> findCommentByUsername(@PathVariable String username,
                                                    @RequestParam(defaultValue = "1") int pageNum,

@@ -20,9 +20,10 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.akinnova.BookReviewMav.enums.ApplicationStatus.NOT_SENT;
-import static com.akinnova.BookReviewMav.enums.ReviewStatus.NOT_CONFIRMED;
+import static com.akinnova.BookReviewMav.enums.ApplicationReviewStatus.NOT_CONFIRMED;
 import static com.akinnova.BookReviewMav.enums.UserRole.*;
 import static com.akinnova.BookReviewMav.enums.UserType.CLIENT;
 import static com.akinnova.BookReviewMav.enums.UserType.SERVICE_PROVIDER;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements IUserService {
                 .password(passwordEncoder.encode(userCreateDto.getPassword()))
                 .userRole(REGULAR_USER)
                 .userType(CLIENT)
-                .specialization(Specialization.NONE)
+                .specialization(ServiceProviderSpecialization.NONE)
                 .applicationStatus(NOT_SENT)
                 .reviewStatus(NOT_CONFIRMED)
                 .activeStatus(true)
@@ -86,24 +87,24 @@ public class UserServiceImpl implements IUserService {
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All users", userEntityList.stream()
                 .sorted(Comparator.comparing(UserEntity::getLastName).thenComparing(UserEntity::getFirstName))
-                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new).collect(Collectors.toList())));
     }
 
-    @Override
-    public ResponseEntity<?> SearchUser(String username, String phoneNumber, String email) {
-
-        UserEntity userEntity = new UserEntity();
-
-        if(StringUtils.hasText(username))
-            userEntity = userRepository.findByUsername(username).filter(UserEntity::getActiveStatus)
-                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, username)));
-
-        if(StringUtils.hasText(email))
-            userEntity = userRepository.findByEmail(username).filter(UserEntity::getActiveStatus)
-                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, email)));
-
-        return new ResponseEntity<>(new UserResponseDto(userEntity), HttpStatus.FOUND);
-    }
+//    @Override
+//    public ResponseEntity<?> SearchUser(String username, String phoneNumber, String email) {
+//
+//        UserEntity userEntity = new UserEntity();
+//
+//        if(StringUtils.hasText(username))
+//            userEntity = userRepository.findByUsername(username).filter(UserEntity::getActiveStatus)
+//                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, username)));
+//
+//        if(StringUtils.hasText(email))
+//            userEntity = userRepository.findByEmail(username).filter(UserEntity::getActiveStatus)
+//                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, email)));
+//
+//        return new ResponseEntity<>(new UserResponseDto(userEntity), HttpStatus.FOUND);
+//    }
 
     // TODO: 13/08/2023 To implement the following methods
     @Override
@@ -118,7 +119,7 @@ public class UserServiceImpl implements IUserService {
             return new ResponseEntity<>(ResponseUtils.NO_CLIENT_YET, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All clients", userEntityList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
@@ -134,7 +135,7 @@ public class UserServiceImpl implements IUserService {
             return new ResponseEntity<>(ResponseUtils.NO_SERVICE_PROVIDER_YET, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All service providers", userEntityList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new).collect(Collectors.toList())));
 
     }
 
@@ -150,7 +151,7 @@ public class UserServiceImpl implements IUserService {
             return new ResponseEntity<>(ResponseUtils.NO_REGULAR_USER_YET, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All regular users", userEntityList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
@@ -165,7 +166,7 @@ public class UserServiceImpl implements IUserService {
             return new ResponseEntity<>(ResponseUtils.NO_ADMIN_YET, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All admins", userEntityList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(UserResponseDto::new).collect(Collectors.toList())));
 
     }
 
@@ -200,9 +201,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public ResponseEntity<?> serviceProviderUpdate(ServiceProviderUpdateDto providerUpdateDto) {
-        UserEntity userEntity = userRepository.findByUsername(providerUpdateDto.getUsername())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, providerUpdateDto.getUsername())));
+    public ResponseEntity<?> serviceProviderUpdate(String username, ServiceProviderUpdateDto providerUpdateDto) {
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, username)));
 
         userEntity.setUserType(providerUpdateDto.getUserType());
         userEntity.setSpecialization(providerUpdateDto.getSpecialization());
@@ -226,9 +227,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public ResponseEntity<?> jobRoleUpdate(AdminUpdateDto adminUpdateDto) {
-        UserEntity userEntity = userRepository.findByUsername(adminUpdateDto.getUsername())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, adminUpdateDto.getUsername())));
+    public ResponseEntity<?> jobRoleUpdate(String username, AdminUpdateDto adminUpdateDto) {
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, username)));
 
         userEntity.setUserRole(adminUpdateDto.getUserRole());
         userEntity.setUserType(adminUpdateDto.getUserType());
@@ -253,3 +254,4 @@ public class UserServiceImpl implements IUserService {
         return ResponseEntity.ok(ResponseUtils.USER_DELETE_MESSAGE);
     }
 }
+

@@ -66,11 +66,6 @@ public class RatingServiceImpl implements IRatingService {
     @Override
     public ResponseEntity<?> serviceProviderRates(String username) {
 
-        //To retrieve all reviews for a book by title
-//        Rating rateBook = ratingRepository.findByUsername(username)
-//                .orElseThrow(()->
-//                        new ApiException(String.format("There are no reviews for user:  %s yet", username)));
-
         Rating rate = ratingRepository.findAll().stream().filter(x-> x.getUsername().getUsername().equals(username))
                 .findFirst().orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, username)));
 

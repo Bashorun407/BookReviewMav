@@ -31,11 +31,11 @@ public class ProjectController {
         return projectService.findProjectByOwner(username, pageNum, pageSize);
     }
 
-    @GetMapping("/title/{title}")
-    public ResponseEntity<?> findProjectByTitle(@PathVariable String title, @RequestParam(defaultValue = "1") int pageNum,
-                                             @RequestParam(defaultValue = "10") int pageSize) {
-        return projectService.findProjectByTitle(title, pageNum, pageSize);
-    }
+//    @GetMapping("/title/{title}")
+//    public ResponseEntity<?> findProjectByTitle(@PathVariable String title, @RequestParam(defaultValue = "1") int pageNum,
+//                                             @RequestParam(defaultValue = "10") int pageSize) {
+//        return projectService.findProjectByTitle(title, pageNum, pageSize);
+//    }
 
     @GetMapping("/projectId/{projectId}")
     public ResponseEntity<?> findProjectByProjectId(@PathVariable String projectId) {
@@ -60,31 +60,31 @@ public class ProjectController {
         return projectService.findCompletedProjects(pageNum, pageSize);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<?> updateProject(@RequestBody ProjectUpdateDto projectUpdateDto) {
-        return projectService.updateProject(projectUpdateDto);
+    @PutMapping("/update/{projectId}")
+    public ResponseEntity<?> updateProject(@PathVariable String projectId, @RequestBody ProjectUpdateDto projectUpdateDto) {
+        return projectService.updateProject(projectId, projectUpdateDto);
     }
 
-    @PutMapping("/serviceProviderUpdate")
-    public ResponseEntity<?> serviceProviderProjectUpdate(@RequestBody ProjectServiceProviderUpdateDto serviceProviderUpdateDto) {
-        return projectService.serviceProviderProjectUpdate(serviceProviderUpdateDto);
+    @PutMapping("/serviceProviderUpdate/{projectId}")
+    public ResponseEntity<?> serviceProviderProjectUpdate(@PathVariable String projectId, @RequestBody ProjectServiceProviderUpdateDto serviceProviderUpdateDto) {
+        return projectService.serviceProviderProjectUpdate(projectId, serviceProviderUpdateDto);
     }
 
-    @PutMapping("/adminUpdate")
-    public ResponseEntity<?> adminProjectUpdate(@RequestBody ProjectAdminUpdateDto adminUpdateDto) {
-        return projectService.adminProjectUpdate(adminUpdateDto);
+    @PutMapping("/adminUpdate/{projectId}")
+    public ResponseEntity<?> adminProjectUpdate(@PathVariable String projectId, @RequestBody ProjectAdminUpdateDto adminUpdateDto) {
+        return projectService.adminProjectUpdate(projectId, adminUpdateDto);
     }
     @DeleteMapping("/delete/{projectId}")
     public ResponseEntity<?> deleteProject(@PathVariable String projectId) {
         return projectService.deleteProject(projectId);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<?> searchProject(@RequestParam(required = false) String username,
-                                        @RequestParam(required = false) String title,
-                                        @RequestParam(required = false) String projectId,
-                                        @RequestParam(defaultValue = "1") int pageNum,
-                                        @RequestParam(defaultValue = "10") int pageSize) {
-        return projectService.searchProject(username, title, projectId, pageNum, pageSize);
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<?> searchProject(@RequestParam(required = false) String username,
+//                                        @RequestParam(required = false) String title,
+//                                        @RequestParam(required = false) String projectId,
+//                                        @RequestParam(defaultValue = "1") int pageNum,
+//                                        @RequestParam(defaultValue = "10") int pageSize) {
+//        return projectService.searchProject(username, title, projectId, pageNum, pageSize);
+//    }
 }

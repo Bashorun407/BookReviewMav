@@ -36,4 +36,5 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new User(userEntity.getUsername(), userEntity.getPassword(), authorities1);
     }
 
+
 }

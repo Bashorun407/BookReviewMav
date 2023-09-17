@@ -45,12 +45,12 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
     @Enumerated(EnumType.STRING)
-    private Specialization specialization;
+    private ServiceProviderSpecialization specialization;
     private Double chargePerHour;
     @Enumerated(EnumType.STRING)
     private ApplicationStatus applicationStatus;
     @Enumerated(EnumType.STRING)
-    private ReviewStatus reviewStatus;
+    private ApplicationReviewStatus reviewStatus;
     private String description;
     private Boolean activeStatus;
 
@@ -68,4 +68,6 @@ public class UserEntity {
     private Set<UserRoles> roles;
 
     private EnumSet<UserRole> enumRoles;
+
+    //private Rating rating;
 }

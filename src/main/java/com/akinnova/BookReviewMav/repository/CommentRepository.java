@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     Optional<List<Comment>> findByUsername(String username);
-    Optional<List<Comment>> findByTitle(String title);
+
 }

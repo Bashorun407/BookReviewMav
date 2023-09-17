@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -43,7 +44,7 @@ public class TransactionServiceImpl implements ITransactionService{
                 .projectId(transactionDto.getProjectId())
                 .userId(transactionDto.getUserId())
                 .amountPaid(transactionDto.getAmountPaid())
-                .invoiceCode(Utility.generateInvoiceCode(8, transactionDto.getInvoiceCode()))
+                .invoiceCode(Utility.generateInvoiceCode(8, transactionDto.getProjectId()))
                 .transactionDate(LocalDateTime.now())
                 .build());
 
@@ -87,7 +88,7 @@ public class TransactionServiceImpl implements ITransactionService{
                 .orElseThrow(()-> new ApiException(ResponseUtils.NO_TRANSACTION_WITH_ID + providerId));
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, String.format("Transaction by id: %s", providerId),
-                transactionList.stream().skip(pageNum - 1).limit(pageSize).map(TransactionResponseDto::new)));
+                transactionList.stream().skip(pageNum - 1).limit(pageSize).map(TransactionResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override

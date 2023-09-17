@@ -1,9 +1,6 @@
 package com.akinnova.BookReviewMav.entity;
 
-import com.akinnova.BookReviewMav.enums.Category;
-import com.akinnova.BookReviewMav.enums.ProjectLevelApproval;
-import com.akinnova.BookReviewMav.enums.ProjectStartApproval;
-import com.akinnova.BookReviewMav.enums.ProjectCompletion;
+import com.akinnova.BookReviewMav.enums.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,8 +29,10 @@ public class Project {
     private Category category;
     private String content;
     private String projectId;
-    private String username;
-    private String serviceProvider;
+    private String clientUsername;
+    private String serviceProviderUsername;
+    @Enumerated(EnumType.STRING)
+    private JobAcceptanceStatus jobAcceptanceStatus;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     @Enumerated(EnumType.STRING)

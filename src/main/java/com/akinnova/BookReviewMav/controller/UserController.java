@@ -29,12 +29,12 @@ public class UserController {
         return userService.allUsers(pageNum, pageSize);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<?> SearchUser(@RequestParam(required = false) String username,
-                                        @RequestParam(required = false) String phoneNumber,
-                                        @RequestParam(required = false) String email) {
-        return userService.SearchUser(username, phoneNumber, email);
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<?> SearchUser(@RequestParam(required = false) String username,
+//                                        @RequestParam(required = false) String phoneNumber,
+//                                        @RequestParam(required = false) String email) {
+//        return userService.SearchUser(username, phoneNumber, email);
+//    }
 
     @GetMapping("/clients")
     public ResponseEntity<?> FindClients(@RequestParam(defaultValue = "1") int pageNum,
@@ -66,13 +66,13 @@ public class UserController {
     }
 
     @PutMapping("/providerUpdate")
-    public ResponseEntity<?> serviceProviderUpdate(ServiceProviderUpdateDto providerUpdateDto) {
-        return userService.serviceProviderUpdate(providerUpdateDto);
+    public ResponseEntity<?> serviceProviderUpdate(String username, ServiceProviderUpdateDto providerUpdateDto) {
+        return userService.serviceProviderUpdate(username, providerUpdateDto);
     }
 
     @PutMapping("/roleUpdate")
-    public ResponseEntity<?> jobRoleUpdate(AdminUpdateDto adminUpdateDto) {
-        return userService.jobRoleUpdate(adminUpdateDto);
+    public ResponseEntity<?> jobRoleUpdate(String username, AdminUpdateDto adminUpdateDto) {
+        return userService.jobRoleUpdate(username, adminUpdateDto);
     }
 
     @DeleteMapping("/delete/{username}")

@@ -5,6 +5,7 @@ import com.akinnova.BookReviewMav.email.emaildto.EmailDetail;
 import com.akinnova.BookReviewMav.email.emailservice.EmailServiceImpl;
 import com.akinnova.BookReviewMav.entity.Project;
 import com.akinnova.BookReviewMav.entity.UserEntity;
+import com.akinnova.BookReviewMav.enums.JobAcceptanceStatus;
 import com.akinnova.BookReviewMav.enums.ResponseType;
 import com.akinnova.BookReviewMav.exception.ApiException;
 import com.akinnova.BookReviewMav.repository.ProjectRepository;
@@ -13,15 +14,16 @@ import com.akinnova.BookReviewMav.response.EmailResponse;
 import com.akinnova.BookReviewMav.response.ResponsePojo;
 import com.akinnova.BookReviewMav.response.ResponseUtils;
 import com.akinnova.BookReviewMav.utilities.Utility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.akinnova.BookReviewMav.enums.ProjectLevelApproval.NOT_SATISFIED;
 import static com.akinnova.BookReviewMav.enums.ProjectStartApproval.NOT_APPROVED;
@@ -30,6 +32,7 @@ import static com.akinnova.BookReviewMav.enums.ProjectCompletion.*;
 @Service
 public class ProjectServiceImpl implements IProjectService {
 
+    Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
     private final ProjectRepository projectRepository;
     private final EmailServiceImpl emailService;
     private final UserRepository userRepository;
@@ -48,7 +51,7 @@ public class ProjectServiceImpl implements IProjectService {
                 .coverImage(projectCreateDto.getCoverImage())
                 .title(projectCreateDto.getTitle())
                 .category(projectCreateDto.getCategory())
-                .username(projectCreateDto.getUsername())
+                .clientUsername(projectCreateDto.getClientUsername())
                 .content(projectCreateDto.getContent())
                 .projectId(Utility.generateBookSerialNumber(10, projectCreateDto.getTitle()))
                 .projectStartApproval(NOT_APPROVED)
@@ -58,9 +61,10 @@ public class ProjectServiceImpl implements IProjectService {
                 .createdOn(LocalDateTime.now())
                 .build());
 
+        logger.info("A new project has been created.");
         //Getting the details of the user
-        UserEntity user = userRepository.findByUsername(project.getUsername())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME , projectCreateDto.getUsername())));
+        UserEntity user = userRepository.findByUsername(project.getClientUsername())
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME , projectCreateDto.getClientUsername())));
 
         //Sending email to the project owner that a new project has been created.
         EmailDetail emailDetail = EmailDetail.builder()
@@ -83,28 +87,29 @@ public class ProjectServiceImpl implements IProjectService {
             return new ResponseEntity<>(ResponseUtils.NO_PROJECTS, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All projects", projectList.stream()
-                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
+                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
     public ResponseEntity<?> findProjectByOwner(String username, int pageNum, int pageSize) {
 
-        List<Project> projectList = projectRepository.findByUsername(username)
+        List<Project> projectList = projectRepository.findByClientUsername(username)
                 .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, username)));
 
-        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All project", projectList.stream()
-                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
+        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Projects by username", projectList.stream()
+                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
     }
 
-    @Override
-    public ResponseEntity<?> findProjectByTitle(String title, int pageNum, int pageSize) {
-
-        List<Project> bookEntityList = projectRepository.findByTitle(title)
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, title)));
-
-        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All projects by title", bookEntityList.stream()
-                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
-    }
+//
+//    @Override
+//    public ResponseEntity<?> findProjectByTitle(String title, int pageNum, int pageSize) {
+//
+//        List<Project> bookEntityList = projectRepository.findByTitle(title)
+//                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, title)));
+//
+//        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "All projects by title", bookEntityList.stream()
+//                .filter(Project::getActiveStatus).sorted(Comparator.comparing(Project::getTitle)).skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
+//    }
 
     @Override
     public ResponseEntity<?> findProjectByProjectId(String projectId) {
@@ -113,7 +118,7 @@ public class ProjectServiceImpl implements IProjectService {
                 .orElseThrow(()-> new ApiException(ResponseUtils.NO_PROJECT_BY_ID + projectId));
 
         return ResponseEntity
-                .ok(new ResponsePojo<>(ResponseType.SUCCESS, String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId), new ProjectResponseDto(project)));
+                .ok(new ResponsePojo<>(ResponseType.SUCCESS, String.format(ResponseUtils.FOUND_MESSAGE, projectId), new ProjectResponseDto(project)));
     }
 
     // TODO: 13/08/2023 To complete the following methods
@@ -129,7 +134,7 @@ public class ProjectServiceImpl implements IProjectService {
             return new ResponseEntity<>(ResponseUtils.NO_PENDING_PROJECT, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Pending projects", projectList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
@@ -143,7 +148,7 @@ public class ProjectServiceImpl implements IProjectService {
             return new ResponseEntity<>(ResponseUtils.NO_STARTED_PROJECT, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Started projects", projectList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
@@ -158,27 +163,27 @@ public class ProjectServiceImpl implements IProjectService {
             return new ResponseEntity<>(ResponseUtils.N0_COMPLETED_PROJECT, HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Completed projects", projectList.stream()
-                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new)));
+                .skip(pageNum - 1).limit(pageSize).map(ProjectResponseDto::new).collect(Collectors.toList())));
     }
 
     @Override
-    public ResponseEntity<?> updateProject(ProjectUpdateDto projectUpdateDto) {
-        Project project = projectRepository.findByProjectId(projectUpdateDto.getProjectId())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID,
-                        projectUpdateDto.getProjectId())));
+    public ResponseEntity<?> updateProject(String projectId, ProjectUpdateDto projectUpdateDto) {
+        Project project = projectRepository.findByProjectId(projectId)
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId)));
 
         project.setCoverImage(projectUpdateDto.getCoverImage());
         project.setTitle(projectUpdateDto.getTitle());
-        project.setUsername(project.getUsername());
+        //project.setClientUsername(projectUpdateDto.getClientUsername());
         project.setActiveStatus(true);
         project.setModifiedOn(LocalDateTime.now());
 
         //Save to repository
         projectRepository.save(project);
 
+        logger.info("Project has been successfully updated");
         //Getting the details of the user
-        UserEntity user = userRepository.findByUsername(project.getUsername())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, project.getUsername())));
+        UserEntity user = userRepository.findByUsername(project.getClientUsername())
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, project.getClientUsername())));
 
 
         //Sending email to the owner of the project
@@ -193,12 +198,12 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
-    public ResponseEntity<?> serviceProviderProjectUpdate(ProjectServiceProviderUpdateDto serviceProviderUpdateDto) {
-        Project project = projectRepository.findByProjectId(serviceProviderUpdateDto.getProjectId())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID,
-                        serviceProviderUpdateDto.getProjectId())));
+    public ResponseEntity<?> serviceProviderProjectUpdate(String projectId, ProjectServiceProviderUpdateDto serviceProviderUpdateDto) {
+        Project project = projectRepository.findByProjectId(projectId)
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId)));
 
-        project.setServiceProvider(serviceProviderUpdateDto.getServiceProvider());
+        project.setServiceProviderUsername(serviceProviderUpdateDto.getServiceProviderUsername());
+        project.setJobAcceptanceStatus(serviceProviderUpdateDto.getJobAcceptanceStatus());
         project.setProjectCompletion(serviceProviderUpdateDto.getProjectCompletion());
         project.setStartDate(serviceProviderUpdateDto.getStartDate());
         project.setEndDate(serviceProviderUpdateDto.getEndDate());
@@ -209,16 +214,17 @@ public class ProjectServiceImpl implements IProjectService {
         // TODO: 05/09/2023 Email should be sent to the project owner that a service provider has accepted the project 
 
         //Getting the details of the user
-        UserEntity user = userRepository.findByUsername(serviceProviderUpdateDto.getServiceProvider())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, serviceProviderUpdateDto.getServiceProvider())));
+        UserEntity user = userRepository.findByUsername(serviceProviderUpdateDto.getServiceProviderUsername())
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_USER_BY_USERNAME, serviceProviderUpdateDto.getServiceProviderUsername())));
+
 
         //Sending email to the project owner that a service provider the owner selected has accepted the offer.
-        if(project.getProjectCompletion().equals(STARTED)){
+        if(project.getJobAcceptanceStatus().equals(JobAcceptanceStatus.ACCEPTED)){
             EmailDetail emailDetail = EmailDetail.builder()
                     .recipient(user.getEmail())
                     .subject(EmailResponse.PROJECT_UPDATE_SUBJECT)
-                    .body(String.format(EmailResponse.PROJECT_SERVICE_UPDATE_MAIL, project.getUsername(),
-                            serviceProviderUpdateDto.getServiceProvider(), project.getTitle() , project.getProjectId(), user.getChargePerHour()))
+                    .body(String.format(EmailResponse.PROJECT_SERVICE_UPDATE_MAIL, project.getClientUsername(),
+                            serviceProviderUpdateDto.getServiceProviderUsername(), project.getTitle() , project.getProjectId(), user.getChargePerHour()))
                     .build();
 
             emailService.sendSimpleEmail(emailDetail);
@@ -229,7 +235,7 @@ public class ProjectServiceImpl implements IProjectService {
             EmailDetail emailDetail = EmailDetail.builder()
                     .recipient(user.getEmail())
                     .subject(EmailResponse.PROJECT_UPDATE_SUBJECT)
-                    .body(String.format(EmailResponse.PROJECT_COMPLETION_MAIL, project.getUsername(), project.getTitle() , project.getProjectId()))
+                    .body(String.format(EmailResponse.PROJECT_COMPLETION_MAIL, project.getClientUsername(), project.getTitle() , project.getProjectId()))
                     .build();
 
             emailService.sendSimpleEmail(emailDetail);
@@ -240,10 +246,9 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     @Override
-    public ResponseEntity<?> adminProjectUpdate(ProjectAdminUpdateDto adminUpdateDto) {
-        Project project = projectRepository.findByProjectId(adminUpdateDto.getProjectId())
-                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID,
-                        adminUpdateDto.getProjectId())));
+    public ResponseEntity<?> adminProjectUpdate(String projectId, ProjectAdminUpdateDto adminUpdateDto) {
+        Project project = projectRepository.findByProjectId(projectId)
+                .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId)));
 
         project.setProjectLevelApproval(adminUpdateDto.getProjectLevelApproval());
 
@@ -266,26 +271,26 @@ public class ProjectServiceImpl implements IProjectService {
         return ResponseEntity.ok(ResponseUtils.PROJECT_DELETED);
     }
 
-    @Override
-    public ResponseEntity<?> searchProject(String username, String title, String projectId, int pageNum, int pageSize) {
-        List<Project> bookEntity = new ArrayList<>();
-
-        if(StringUtils.hasText(username))
-            bookEntity = projectRepository.findByUsername(username)
-                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, username)));
-
-        if(StringUtils.hasText(title))
-            bookEntity = projectRepository.findByTitle(title)
-                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, title)));
-
-        if(StringUtils.hasText(projectId))
-            bookEntity.add(projectRepository.findByProjectId(projectId).filter(Project::getActiveStatus)
-                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId))));
-
-        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Completed projects", bookEntity.stream()
-                .filter(Project::getActiveStatus)
-                .skip(pageNum).limit(pageSize).map(ProjectResponseDto::new)));
-
-    }
+//    @Override
+//    public ResponseEntity<?> searchProject(String username, String title, String projectId, int pageNum, int pageSize) {
+//        List<Project> bookEntity = new ArrayList<>();
+//
+//        if(StringUtils.hasText(username))
+//            bookEntity = projectRepository.findByUsername(username)
+//                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, username)));
+//
+//        if(StringUtils.hasText(title))
+//            bookEntity = projectRepository.findByTitle(title)
+//                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_NAME, title)));
+//
+//        if(StringUtils.hasText(projectId))
+//            bookEntity.add(projectRepository.findByProjectId(projectId).filter(Project::getActiveStatus)
+//                    .orElseThrow(()-> new ApiException(String.format(ResponseUtils.NO_PROJECT_BY_ID, projectId))));
+//
+//        return ResponseEntity.ok(new ResponsePojo<>(ResponseType.SUCCESS, "Completed projects", bookEntity.stream()
+//                .filter(Project::getActiveStatus)
+//                .skip(pageNum).limit(pageSize).map(ProjectResponseDto::new)));
+//
+//    }
 
 }
