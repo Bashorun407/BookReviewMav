@@ -21,7 +21,7 @@
         <layout class="ch.qos.logback.classic.html.HTMLLayout"/>
     </appender>
 
-    <logger name="com.akinnova.BookReviewGrad" level="error" additivity="false">
+    <logger name="com.akinnova" level="error" additivity="false">
         <appender-ref ref="EMAIL"/>
     </logger>
 

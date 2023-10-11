@@ -28,3 +28,6 @@
 2023-09-17 01:51:07,451 INFO o.a.c.h.Http11NioProtocol [restartedMain] Starting ProtocolHandler ["http-nio-8084"]
 2023-09-17 01:51:07,480 INFO o.s.b.w.e.t.TomcatWebServer [restartedMain] Tomcat started on port(s): 8084 (http) with context path ''
 2023-09-17 01:51:07,492 INFO c.a.B.BookReviewMavApplication [restartedMain] Started BookReviewMavApplication in 7.275 seconds (process running for 8.475)
+2023-09-17 02:37:48,527 INFO o.s.o.j.LocalContainerEntityManagerFactoryBean [SpringApplicationShutdownHook] Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-09-17 02:37:48,673 INFO c.z.h.HikariDataSource [SpringApplicationShutdownHook] HikariPool-1 - Shutdown initiated...
+2023-09-17 02:37:48,729 INFO c.z.h.HikariDataSource [SpringApplicationShutdownHook] HikariPool-1 - Shutdown completed.
